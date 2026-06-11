@@ -64,7 +64,7 @@ export function fallbackProduct() {
       { id: "p2", name: "Mua 2 set", minQuantity: 2, finalPrice: 378000 },
       { id: "p3", name: "Mua 3 set", minQuantity: 3, finalPrice: 557000 }
     ],
-    reviews: [] as any[]
+    reviews: [] as import("@prisma/client").Review[]
   };
 }
 

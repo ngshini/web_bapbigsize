@@ -13,13 +13,21 @@ type Media = {
   originalFileName?: string | null;
 };
 
-export function MediaUploader({
+export function MediaUploader<T extends {
+  mediaUrl: string;
+  mediaType: "IMAGE" | "VIDEO";
+  altText?: string | null;
+  isMain: boolean;
+  sortOrder: number;
+  storagePath?: string | null;
+  originalFileName?: string | null;
+}>({
   media,
   setMedia,
   colors = []
 }: {
-  media: any[];
-  setMedia: Dispatch<SetStateAction<any[]>>;
+  media: T[];
+  setMedia: Dispatch<SetStateAction<T[]>>;
   colors?: string[];
 }) {
   const [uploading, setUploading] = useState(false);
@@ -44,7 +52,7 @@ export function MediaUploader({
           ...item,
           isMain: !prev.length && index === 0,
           sortOrder: prev.length + index
-        }))
+        } as unknown as T))
       ]);
       setHasPendingChanges(true);
     }
@@ -85,7 +93,7 @@ export function MediaUploader({
                   className="min-h-9 rounded-md border border-slate-200 bg-white px-2 py-1 text-sm"
                   value={item.altText ?? ""}
                   onChange={(e) => {
-                    setMedia(media.map((m, i) => i === index ? { ...m, altText: e.target.value || null } : m));
+                    setMedia(media.map((m, i) => i === index ? { ...m, altText: e.target.value || null } as T : m));
                     setHasPendingChanges(true);
                   }}
                   title="Gán màu cho ảnh này"
@@ -102,7 +110,7 @@ export function MediaUploader({
                   name="mainMedia"
                   checked={item.isMain}
                   onChange={() => {
-                    setMedia(media.map((current, currentIndex) => ({ ...current, isMain: currentIndex === index })));
+                    setMedia(media.map((current, currentIndex) => ({ ...current, isMain: currentIndex === index } as T)));
                     setHasPendingChanges(true);
                   }}
                 />

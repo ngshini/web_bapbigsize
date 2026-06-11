@@ -41,7 +41,7 @@ export function VariantEditor({ variants, setVariants }: { variants: Variant[]; 
 
       {variants.length === 0 && (
         <p className="rounded-md bg-slate-50 p-4 text-sm text-slate-400">
-          Chưa có biến thể nào. Bấm "+ Thêm biến thể" để tạo.
+          Chưa có biến thể nào. Bấm &quot;+ Thêm biến thể&quot; để tạo.
         </p>
       )}
 
