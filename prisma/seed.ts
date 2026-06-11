@@ -43,6 +43,17 @@ async function main() {
     }
   });
 
+  await prisma.user.upsert({
+    where: { email: "shopbap@bapbigsize.local" },
+    update: { passwordHash: await bcrypt.hash("123456", 12) },
+    create: {
+      fullName: "Shop Bắp",
+      email: "shopbap@bapbigsize.local",
+      passwordHash: await bcrypt.hash("123456", 12),
+      role: "ADMIN"
+    }
+  });
+
   await prisma.storeSetting.upsert({
     where: { id: "store-default" },
     update: logo ? { logoUrl: storagePublicUrl(logo.fileName) } : {},
