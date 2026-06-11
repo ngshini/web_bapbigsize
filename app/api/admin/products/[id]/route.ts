@@ -23,6 +23,22 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   const parsed = productSchema.safeParse(await request.json());
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Invalid data" }, { status: 400 });
   const data = parsed.data;
+
+  // Tự động tạo SKU unique tuyệt đối nếu để trống
+  const ts = Date.now();
+  const variantsWithSku = data.variants.map((v, index) => {
+    const sku = v.sku?.trim() || `${data.productCode}-${v.color}-${v.size}-${ts}${index}`.replace(/\s+/g, "").toUpperCase();
+    return { ...v, sku };
+  });
+
+  // Deduplicate media theo URL trước khi lưu
+  const seenUrls = new Set<string>();
+  const uniqueMedia = data.media.filter((m) => {
+    if (seenUrls.has(m.mediaUrl)) return false;
+    seenUrls.add(m.mediaUrl);
+    return true;
+  });
+
   const product = await prisma.$transaction(async (tx) => {
     await tx.productMedia.deleteMany({ where: { productId: id } });
     await tx.productVariant.deleteMany({ where: { productId: id } });
@@ -44,8 +60,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         isFeatured: data.isFeatured,
         seoTitle: data.seoTitle,
         seoDescription: data.seoDescription,
-        media: { create: data.media.map(omitId) },
-        variants: { create: data.variants.map(omitId) },
+        media: { create: uniqueMedia.map(omitId) },
+        variants: { create: variantsWithSku.map(omitId) },
         promotions: { create: data.promotions.map(omitId) }
       }
     });

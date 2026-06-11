@@ -54,7 +54,7 @@ export const productSchema = z.object({
         id: z.string().optional(),
         size: z.string().min(1),
         color: z.string().min(1),
-        sku: z.string().min(1),
+        sku: z.string().optional().default(""),
         price: z.coerce.number().int().min(0),
         stockQuantity: z.coerce.number().int().min(0),
         isActive: z.coerce.boolean().default(true)

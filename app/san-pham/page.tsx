@@ -1,3 +1,4 @@
+import { Search } from "lucide-react";
 import { Footer } from "@/components/public/Footer";
 import { Header } from "@/components/public/Header";
 import { ProductCard } from "@/components/public/ProductCard";
@@ -11,12 +12,19 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
   const size = params.size;
   const color = params.color;
   const maxPrice = params.maxPrice ? Number(params.maxPrice) : undefined;
+  const q = params.q?.trim().toLowerCase();
+
   const filtered = products.filter((product) => {
     const variants = product.variants ?? [];
-    return (!size || variants.some((variant) => variant.size === size)) && (!color || variants.some((variant) => variant.color === color)) && (!maxPrice || product.salePrice <= maxPrice);
+    const matchSize = !size || variants.some((v) => v.size === size);
+    const matchColor = !color || variants.some((v) => v.color === color);
+    const matchPrice = !maxPrice || product.salePrice <= maxPrice;
+    const matchSearch = !q || product.name.toLowerCase().includes(q) || (product.productCode ?? "").toLowerCase().includes(q);
+    return matchSize && matchColor && matchPrice && matchSearch;
   });
-  const sizes = Array.from(new Set(products.flatMap((product) => product.variants?.map((variant) => variant.size) ?? [])));
-  const colors = Array.from(new Set(products.flatMap((product) => product.variants?.map((variant) => variant.color) ?? [])));
+
+  const sizes = Array.from(new Set(products.flatMap((p) => p.variants?.map((v) => v.size) ?? [])));
+  const colors = Array.from(new Set(products.flatMap((p) => p.variants?.map((v) => v.color) ?? [])));
 
   return (
     <>
@@ -36,31 +44,53 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
         </section>
 
         <section className="mx-auto max-w-6xl px-4 py-6 sm:py-8">
-          <form className="grid gap-3 rounded-md border border-brand-100 bg-white p-3 shadow-sm sm:grid-cols-2 sm:p-4 lg:grid-cols-[1fr_1fr_1fr_auto]">
-            <select name="size" defaultValue={size ?? ""}>
-              <option value="">Tất cả size</option>
-              {sizes.map((item) => (
-                <option key={item}>{item}</option>
-              ))}
-            </select>
-            <select name="color" defaultValue={color ?? ""}>
-              <option value="">Tất cả màu</option>
-              {colors.map((item) => (
-                <option key={item}>{item}</option>
-              ))}
-            </select>
-            <select name="maxPrice" defaultValue={params.maxPrice ?? ""}>
-              <option value="">Tất cả giá</option>
-              <option value="200000">Dưới 200.000đ</option>
-              <option value="300000">Dưới 300.000đ</option>
-            </select>
-            <button className="rounded-md bg-brand-900 px-5 py-3 font-bold text-white">Lọc</button>
+          <form className="grid gap-3 rounded-md border border-brand-100 bg-white p-3 shadow-sm sm:p-4">
+            {/* Ô tìm kiếm */}
+            <div className="relative">
+              <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                name="q"
+                defaultValue={q ?? ""}
+                placeholder="Tìm theo tên hoặc mã sản phẩm..."
+                className="w-full rounded-md border border-slate-200 py-3 pl-10 pr-4 text-sm focus:border-brand-700 focus:outline-none focus:ring-1 focus:ring-brand-700"
+              />
+            </div>
+            {/* Bộ lọc */}
+            <div className="grid gap-3 sm:grid-cols-[1fr_1fr_1fr_auto]">
+              <select name="size" defaultValue={size ?? ""} className="rounded-md border border-slate-200 py-3 px-3 text-sm">
+                <option value="">Tất cả size</option>
+                {sizes.map((item) => (
+                  <option key={item}>{item}</option>
+                ))}
+              </select>
+              <select name="color" defaultValue={color ?? ""} className="rounded-md border border-slate-200 py-3 px-3 text-sm">
+                <option value="">Tất cả màu</option>
+                {colors.map((item) => (
+                  <option key={item}>{item}</option>
+                ))}
+              </select>
+              <select name="maxPrice" defaultValue={params.maxPrice ?? ""} className="rounded-md border border-slate-200 py-3 px-3 text-sm">
+                <option value="">Tất cả giá</option>
+                <option value="200000">Dưới 200.000đ</option>
+                <option value="300000">Dưới 300.000đ</option>
+              </select>
+              <button className="rounded-md bg-brand-900 px-5 py-3 font-bold text-white text-sm">Lọc</button>
+            </div>
           </form>
-          <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {filtered.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-          </div>
+
+          {filtered.length === 0 ? (
+            <div className="mt-12 flex flex-col items-center gap-3 text-center text-slate-500">
+              <Search size={48} className="text-slate-300" />
+              <p className="text-lg font-semibold">Không tìm thấy sản phẩm nào</p>
+              <p className="text-sm">Thử tìm với từ khóa khác hoặc bỏ bộ lọc</p>
+            </div>
+          ) : (
+            <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {filtered.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          )}
         </section>
       </main>
       <Footer store={store} />

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Mail, MapPin, PhoneCall } from "lucide-react";
+import { ZaloChatButton } from "@/components/public/ZaloChatButton";
 
 type FooterProps = {
   store: {
@@ -72,6 +73,7 @@ export function Footer({ store }: FooterProps) {
         <div>
           <p className="font-bold uppercase tracking-wide">Hỗ trợ khách hàng</p>
           <div className="mt-5 grid gap-4 text-sm text-brand-900/75">
+            <Link href="/tra-cuu-don">Tra cứu đơn hàng</Link>
             <Link href="/#lien-he">Chính sách đổi hàng và bảo hành</Link>
             <Link href="/san-pham">Chính sách Membership</Link>
             <Link href="/san-pham">Chính sách ưu đãi sinh nhật</Link>
@@ -113,14 +115,7 @@ export function Footer({ store }: FooterProps) {
             ))}
           </div>
 
-          <div className="mt-10 space-y-4">
-            <div className="inline-flex items-center gap-2 rounded-md bg-white/75 px-3 py-2 text-sm font-bold text-brand-700 ring-1 ring-brand-100">
-              ✓ Đã thông báo Bộ Công Thương
-            </div>
-            <div className="inline-flex items-center gap-2 rounded-md bg-white/75 px-3 py-2 text-sm font-bold text-brand-700 ring-1 ring-brand-100">
-              ✓ DMCA Protected
-            </div>
-          </div>
+
         </div>
       </div>
 
@@ -128,14 +123,7 @@ export function Footer({ store }: FooterProps) {
         <div className="mx-auto max-w-7xl px-4 py-4 text-center text-xs text-brand-900/60">© Bản quyền thuộc về {store.storeName}</div>
       </div>
 
-      <div className="fixed bottom-24 right-4 z-40 hidden gap-3 lg:grid">
-        <a href={`tel:${store.phone}`} className="grid h-12 w-12 place-items-center rounded-full bg-brand-700 text-white shadow-lg ring-4 ring-white/20">
-          <PhoneCall size={24} />
-        </a>
-        <a href="#top" className="grid h-12 w-12 place-items-center rounded-full border border-white/25 bg-brand-900 text-white shadow-lg">
-          ↑
-        </a>
-      </div>
+      <ZaloChatButton phone={store.phone} zaloUrl={store.zaloUrl} />
     </footer>
   );
 }

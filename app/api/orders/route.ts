@@ -66,3 +66,32 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json({ orderCode: result.orderCode, id: result.id });
 }
+
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const phone = searchParams.get("phone")?.trim();
+
+  if (!phone || phone.length < 9) {
+    return NextResponse.json({ error: "Số điện thoại không hợp lệ" }, { status: 400 });
+  }
+
+  try {
+    const orders = await prisma.order.findMany({
+      where: { customerPhone: phone },
+      orderBy: { createdAt: "desc" },
+      take: 20,
+      include: {
+        items: {
+          include: {
+            product: { select: { name: true, productCode: true, slug: true } }
+          }
+        }
+      }
+    });
+
+    return NextResponse.json({ orders });
+  } catch {
+    return NextResponse.json({ error: "Không thể tra cứu đơn hàng" }, { status: 500 });
+  }
+}
+

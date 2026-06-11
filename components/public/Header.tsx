@@ -32,6 +32,7 @@ export function Header({ store }: HeaderProps) {
         <nav className="hidden items-center gap-6 text-sm font-medium text-brand-900 md:flex">
           <Link href="/san-pham">Sản phẩm</Link>
           <Link href="/#bang-size">Bảng size</Link>
+          <Link href="/tra-cuu-don">Tra cứu đơn</Link>
           <Link href="/#lien-he">Liên hệ</Link>
         </nav>
 

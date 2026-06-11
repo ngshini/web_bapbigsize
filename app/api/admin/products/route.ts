@@ -14,6 +14,14 @@ export async function POST(request: NextRequest) {
   const parsed = productSchema.safeParse(await request.json());
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Invalid data" }, { status: 400 });
   const data = parsed.data;
+
+  // Tự động tạo SKU unique tuyệt đối nếu để trống
+  const ts = Date.now();
+  const variantsWithSku = data.variants.map((v, index) => {
+    const sku = v.sku?.trim() || `${data.productCode}-${v.color}-${v.size}-${ts}${index}`.replace(/\s+/g, "").toUpperCase();
+    return { ...v, sku };
+  });
+
   const product = await prisma.product.create({
     data: {
       categoryId: data.categoryId,
@@ -31,7 +39,7 @@ export async function POST(request: NextRequest) {
       seoTitle: data.seoTitle,
       seoDescription: data.seoDescription,
       media: { create: data.media },
-      variants: { create: data.variants },
+      variants: { create: variantsWithSku },
       promotions: { create: data.promotions }
     }
   });

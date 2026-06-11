@@ -24,6 +24,10 @@ type BuyNowCheckoutProps = {
   };
   variants: Variant[];
   phone: string;
+  // optional: controlled color from parent (ProductDetailClient)
+  colorImageMap?: Record<string, string | null>;
+  selectedColor?: string;
+  onColorChange?: (color: string) => void;
 };
 
 const VIETNAM_PROVINCES = [
@@ -77,7 +81,7 @@ type StoredCartItem = {
   quantity: number;
 };
 
-export function BuyNowCheckout({ product, variants, phone }: BuyNowCheckoutProps) {
+export function BuyNowCheckout({ product, variants, phone, colorImageMap = {}, selectedColor: controlledColor, onColorChange }: BuyNowCheckoutProps) {
   const activeVariants = variants.filter((variant) => variant.isActive);
   const colors = Array.from(new Set(activeVariants.map((variant) => variant.color)));
   const sizes = Array.from(new Set(activeVariants.map((variant) => variant.size)));
@@ -90,10 +94,18 @@ export function BuyNowCheckout({ product, variants, phone }: BuyNowCheckoutProps
     district: "",
     ward: "",
     size: sizes[0] ?? "",
-    color: colors[0] ?? "",
+    color: controlledColor ?? colors[0] ?? "",
     quantity: 1,
     note: ""
   });
+
+  // Sync khi controlledColor thay đổi từ bên ngoài
+  const currentColor = controlledColor ?? form.color;
+
+  function handleColorChange(color: string) {
+    setForm((prev) => ({ ...prev, color }));
+    onColorChange?.(color);
+  }
   const [message, setMessage] = useState("");
   const [cartMessage, setCartMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -154,23 +166,68 @@ export function BuyNowCheckout({ product, variants, phone }: BuyNowCheckoutProps
       <div className="space-y-6 border-t border-slate-100 pt-5">
         <div>
           <p className="text-xl text-slate-950">
-            Màu sắc: <span className="font-bold">{form.color || "Chọn màu"}</span>
+            Màu sắc: <span className="font-bold">{currentColor || "Chọn màu"}</span>
           </p>
-          <div className="mt-3 flex flex-wrap gap-3">
-            {colors.map((color) => (
-              <button
-                key={color}
-                type="button"
-                onClick={() => setForm({ ...form, color })}
-                className={`grid h-16 w-16 place-items-center rounded-full border-2 bg-white p-1 transition ${form.color === color ? "border-slate-950" : "border-slate-200 hover:border-slate-400"}`}
-                aria-label={`Chọn màu ${color}`}
+
+          {/* Icon tròn: chỉ hiện cho màu đã được gán ảnh trong admin */}
+          {colors.some((c) => colorImageMap[c]) && (
+            <div className="mt-3 flex flex-wrap gap-4">
+              {colors
+                .filter((color) => colorImageMap[color]) // chỉ màu có ảnh thật
+                .map((color) => {
+                  const swatchImg = colorImageMap[color]!;
+                  const isSelected = currentColor === color;
+                  return (
+                    <button
+                      key={color}
+                      type="button"
+                      onClick={() => handleColorChange(color)}
+                      className={`relative grid place-items-center rounded-full border-2 bg-white p-1 transition ${
+                        isSelected
+                          ? "border-slate-950 ring-2 ring-offset-1 ring-slate-400"
+                          : "border-slate-200 hover:border-slate-400"
+                      }`}
+                      style={{ width: 72, height: 72 }}
+                      aria-label={`Chọn màu ${color}`}
+                      title={color}
+                    >
+                      <span className="relative block h-full w-full overflow-hidden rounded-full bg-brand-50">
+                        <Image src={swatchImg} alt={color} fill sizes="72px" className="object-cover" />
+                      </span>
+                      {isSelected && (
+                        <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] font-bold text-slate-800">
+                          {color}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+            </div>
+          )}
+
+          {/* Dropdown: dành cho màu chưa gán ảnh hoặc khi chưa gán ảnh nào */}
+          {colors.some((c) => !colorImageMap[c]) && (
+            <div className="mt-3">
+              <select
+                className="min-h-11 rounded-md border border-slate-200 bg-white px-3 py-2 text-base"
+                value={currentColor}
+                onChange={(e) => handleColorChange(e.target.value)}
               >
-                <span className="relative h-full w-full overflow-hidden rounded-full bg-brand-50">
-                  {product.imageUrl ? <Image src={product.imageUrl} alt={color} fill sizes="64px" className="object-cover" /> : null}
-                </span>
-              </button>
-            ))}
-          </div>
+                {colors
+                  .filter((c) => !colorImageMap[c])
+                  .map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+              </select>
+            </div>
+          )}
+
+          {/* Tên màu đang chọn */}
+          {currentColor && (
+            <p className="mt-7 text-sm text-slate-500">
+              Đang xem: <span className="font-bold text-slate-800">{currentColor}</span>
+            </p>
+          )}
         </div>
 
         <div>

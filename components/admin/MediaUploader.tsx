@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, Dispatch, SetStateAction, useState } from "react";
 import Image from "next/image";
 
 type Media = {
@@ -13,7 +13,15 @@ type Media = {
   originalFileName?: string | null;
 };
 
-export function MediaUploader({ media, setMedia }: { media: Media[]; setMedia: (media: Media[]) => void }) {
+export function MediaUploader({
+  media,
+  setMedia,
+  colors = []
+}: {
+  media: any[];
+  setMedia: Dispatch<SetStateAction<any[]>>;
+  colors?: string[];
+}) {
   const [uploading, setUploading] = useState(false);
   const [hasPendingChanges, setHasPendingChanges] = useState(false);
 
@@ -29,10 +37,20 @@ export function MediaUploader({ media, setMedia }: { media: Media[]; setMedia: (
       if (response.ok) uploaded.push(await response.json());
     }
     if (uploaded.length) {
-      setMedia([...media, ...uploaded.map((item, index) => ({ ...item, isMain: !media.length && index === 0, sortOrder: media.length + index }))]);
+      // Dùng functional update để tránh stale closure
+      setMedia((prev) => [
+        ...prev,
+        ...uploaded.map((item, index) => ({
+          ...item,
+          isMain: !prev.length && index === 0,
+          sortOrder: prev.length + index
+        }))
+      ]);
       setHasPendingChanges(true);
     }
     setUploading(false);
+    // Reset input để có thể upload lại cùng file
+    event.target.value = "";
   }
 
   return (
@@ -51,10 +69,33 @@ export function MediaUploader({ media, setMedia }: { media: Media[]; setMedia: (
                 ) : (
                   <span>Video</span>
                 )}
+                {/* Badge màu đã gán */}
+                {item.altText && (
+                  <span className="absolute bottom-0 left-0 right-0 bg-brand-900/80 py-0.5 text-center text-[9px] font-bold text-white">
+                    {item.altText}
+                  </span>
+                )}
               </div>
               <span className="break-all sm:truncate">{item.originalFileName ?? item.mediaUrl}</span>
             </div>
-            <div className="flex shrink-0 items-center gap-2">
+            <div className="flex shrink-0 flex-wrap items-center gap-2">
+              {/* Gán màu cho ảnh */}
+              {colors.length > 0 && item.mediaType === "IMAGE" && (
+                <select
+                  className="min-h-9 rounded-md border border-slate-200 bg-white px-2 py-1 text-sm"
+                  value={item.altText ?? ""}
+                  onChange={(e) => {
+                    setMedia(media.map((m, i) => i === index ? { ...m, altText: e.target.value || null } : m));
+                    setHasPendingChanges(true);
+                  }}
+                  title="Gán màu cho ảnh này"
+                >
+                  <option value="">-- Chọn màu --</option>
+                  {colors.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              )}
               <label className="flex items-center gap-1">
                 <input
                   type="radio"

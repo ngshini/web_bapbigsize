@@ -13,10 +13,24 @@ type Media = {
   isMain?: boolean;
 };
 
-export function ProductGallery({ media, name }: { media: Media[]; name: string }) {
-  const sorted = useMemo(() => media.filter(Boolean), [media]);
+export function ProductGallery({ media, name, activeMediaId }: { media: Media[]; name: string; activeMediaId?: string }) {
+  const sorted = useMemo(() => {
+    const seen = new Set<string>();
+    return media.filter(Boolean).filter((item) => {
+      if (seen.has(item.mediaUrl)) return false;
+      seen.add(item.mediaUrl);
+      return true;
+    });
+  }, [media]);
   const videos = useMemo(() => sorted.filter((item) => item.mediaType === "VIDEO"), [sorted]);
   const [active, setActive] = useState(() => sorted.find((item) => item.isMain && item.mediaType === "IMAGE") ?? sorted.find((item) => item.mediaType === "IMAGE") ?? sorted[0]);
+
+  // Khi activeMediaId thay đổi từ bên ngoài (chọn màu) → nhảy đến ảnh đó
+  useEffect(() => {
+    if (!activeMediaId) return;
+    const found = sorted.find((item) => item.id === activeMediaId);
+    if (found) setActive(found);
+  }, [activeMediaId, sorted]);
   const activeIndex = Math.max(
     0,
     sorted.findIndex((item) => item.id === active?.id)
@@ -44,15 +58,16 @@ export function ProductGallery({ media, name }: { media: Media[]; name: string }
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <div className="grid gap-3 md:grid-cols-[88px_1fr]">
-        <div className="order-2 grid grid-cols-5 gap-2 md:order-1 md:max-h-[760px] md:grid-cols-1 md:overflow-y-auto md:pr-1">
+        {/* Thumbnails: cuộn ngang trên mobile, cột dọc trên desktop */}
+        <div className="order-2 flex gap-2 overflow-x-auto pb-1 md:order-1 md:max-h-[760px] md:flex-col md:overflow-y-auto md:overflow-x-hidden md:pr-1">
           {sorted.map((item) => (
             <button
               type="button"
               key={item.id}
               onClick={() => setActive(item)}
-              className={`relative aspect-square overflow-hidden rounded-md border bg-white transition ${active.id === item.id ? "border-brand-700 ring-2 ring-brand-100" : "border-brand-100 hover:border-brand-300"}`}
+              className={`relative aspect-square h-16 w-16 shrink-0 overflow-hidden rounded-md border bg-white transition md:h-auto md:w-full ${active.id === item.id ? "border-brand-700 ring-2 ring-brand-100" : "border-brand-100 hover:border-brand-300"}`}
             >
               {item.mediaType === "VIDEO" ? (
                 <span className="grid h-full place-items-center bg-brand-900 text-white">

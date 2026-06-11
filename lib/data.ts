@@ -63,7 +63,8 @@ export function fallbackProduct() {
       { id: "p1", name: "Mua 1 set", minQuantity: 1, finalPrice: 199000 },
       { id: "p2", name: "Mua 2 set", minQuantity: 2, finalPrice: 378000 },
       { id: "p3", name: "Mua 3 set", minQuantity: 3, finalPrice: 557000 }
-    ]
+    ],
+    reviews: [] as any[]
   };
 }
 
@@ -123,3 +124,30 @@ export async function getProductBySlug(slug: string) {
 export async function getSizeGuideImage() {
   return getFallbackSizeGuideUrl();
 }
+
+export async function getRelatedProducts(currentSlug: string, categoryId?: string | null, limit = 4) {
+  try {
+    const products = await prisma.product.findMany({
+      where: {
+        status: "ACTIVE",
+        slug: { not: currentSlug },
+        ...(categoryId ? { categoryId } : {})
+      },
+      include: { media: { orderBy: { sortOrder: "asc" } }, variants: true },
+      orderBy: [{ isHot: "desc" }, { createdAt: "desc" }],
+      take: limit
+    });
+    if (products.length) return products;
+    // If no products in same category, get any other products
+    const fallbackProducts = await prisma.product.findMany({
+      where: { status: "ACTIVE", slug: { not: currentSlug } },
+      include: { media: { orderBy: { sortOrder: "asc" } }, variants: true },
+      orderBy: [{ isHot: "desc" }, { createdAt: "desc" }],
+      take: limit
+    });
+    return fallbackProducts;
+  } catch {
+    return [];
+  }
+}
+
