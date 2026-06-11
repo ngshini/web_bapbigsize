@@ -44,7 +44,7 @@ export default async function HomePage() {
                 <ShoppingBag size={16} />
                 Bắp Bigsize chính hãng
               </p>
-              <h1 className="max-w-2xl text-3xl font-bold leading-tight text-brand-900 sm:text-4xl md:text-5xl">Đồ bộ nữ bigsize dễ mặc, lên form đẹp, đặt hàng nhanh</h1>
+              <h1 className="max-w-2xl text-3xl font-bold leading-tight text-brand-900 sm:text-4xl md:text-5xl">Set Đồ bộ thiết kế cao cấp</h1>
               <p className="mt-4 max-w-2xl text-base leading-7 text-brand-900/80 sm:text-lg">
                 {store.storeName} chuyên đồ bộ nữ form 45-85kg, chất thun co giãn, màu dễ phối, phù hợp đi làm, đi chơi và mặc hằng ngày.
               </p>
