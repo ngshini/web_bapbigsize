@@ -272,9 +272,13 @@ export function BuyNowCheckout({ product, variants, phone, colorImageMap = {}, s
         </div>
         {cartMessage ? <p className="rounded-md bg-green-50 p-3 text-sm font-bold text-green-800">{cartMessage}</p> : null}
 
-        <button type="button" onClick={() => setCheckoutOpen(true)} className="h-16 w-full rounded-md bg-[#07235f] px-6 text-xl font-bold uppercase tracking-wide text-white transition hover:bg-brand-900">
-          Mua ngay
-        </button>
+        <button
+  type="button"
+  onClick={() => setCheckoutOpen(true)}
+  className="h-16 w-full rounded-md bg-pink-600 px-6 text-xl font-bold uppercase tracking-wide text-white transition hover:bg-pink-700"
+>
+  Mua ngay
+</button>
 
         <button type="button" onClick={() => setCheckoutOpen(true)} className="flex w-full items-center justify-between gap-3 rounded-md border-2 border-[#07235f] px-4 py-3 text-left text-lg font-bold text-[#07235f]">
           <span className="flex items-center gap-3">
