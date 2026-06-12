@@ -10,7 +10,7 @@ export const defaultStore = {
   address: "7/134/39 Liên khu 5-6, Bình Hưng Hòa B, Bình Tân, TP. Hồ Chí Minh",
   logoUrl: null as string | null,
   facebookUrl: "",
-  zaloUrl: "https://zalo.me/0976934604"
+  zaloUrl: "https://zalo.me/g/6aqdtxyciyxyit6frne9"
 };
 
 export { calculatePromotionPrice };
@@ -71,13 +71,22 @@ export function fallbackProduct() {
 export async function getStoreSettings() {
   try {
     const settings = await prisma.storeSetting.findFirst();
+
     return {
       ...defaultStore,
       ...settings,
+
+      // Ép cứng link nhóm Zalo
+      zaloUrl: "https://zalo.me/g/6aqdtxyciyxyit6frne9",
+
       logoUrl: settings?.logoUrl ?? getFallbackLogoUrl()
     };
   } catch {
-    return { ...defaultStore, logoUrl: getFallbackLogoUrl() };
+    return {
+      ...defaultStore,
+      zaloUrl: "https://zalo.me/g/6aqdtxyciyxyit6frne9",
+      logoUrl: getFallbackLogoUrl()
+    };
   }
 }
 

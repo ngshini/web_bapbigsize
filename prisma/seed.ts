@@ -65,7 +65,7 @@ async function main() {
       email: "bapstore2508@gmail.com",
       address: "7/134/39 Liên khu 5-6, Bình Hưng Hòa B, Bình Tân, TP. Hồ Chí Minh",
       logoUrl: logo ? storagePublicUrl(logo.fileName) : null,
-      zaloUrl: "https://zalo.me/0976934604",
+      zaloUrl: "https://zalo.me/g/6aqdtxyciyxyit6frne9",
       facebookUrl: ""
     }
   });
