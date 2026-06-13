@@ -10,7 +10,8 @@ export const defaultStore = {
   address: "7/134/39 Liên khu 5-6, Bình Hưng Hòa B, Bình Tân, TP. Hồ Chí Minh",
   logoUrl: null as string | null,
   facebookUrl: "",
-  zaloUrl: "https://zalo.me/g/6aqdtxyciyxyit6frne9"
+  zaloUrl: "https://zalo.me/g/6aqdtxyciyxyit6frne9",
+  tiktokUrl: "https://www.tiktok.com/@bapbigsize?_r=1&_t=ZS-978uG9DaLXo"
 };
 
 export { calculatePromotionPrice };

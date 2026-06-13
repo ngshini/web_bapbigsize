@@ -13,6 +13,7 @@ type FooterProps = {
     logoUrl?: string | null;
     facebookUrl?: string | null;
     zaloUrl?: string | null;
+    tiktokUrl?: string | null;
   };
 };
 
@@ -57,15 +58,20 @@ export function Footer({ store }: FooterProps) {
             <p className="font-bold uppercase">Kết nối với chúng tôi</p>
             <div className="mt-4 flex flex-wrap gap-2">
               {[
-                ["Zalo", store.zaloUrl || `https://zalo.me/${store.phone}`],
-                ["IG", "#"],
-                ["▶", "#"],
-                ["♪", "#"]
-              ].map(([label, href]) => (
-                <a key={label} href={href} className="grid h-9 min-w-9 place-items-center rounded-md border border-brand-200 bg-white/70 px-2 text-sm font-bold text-brand-700 transition hover:bg-brand-700 hover:text-white">
-                  {label}
-                </a>
-              ))}
+  ["Zalo", store.zaloUrl || `https://zalo.me/${store.phone}`],
+  ["TikTok", store.tiktokUrl || "#"],
+  ["IG", "#"],
+  ["▶", "#"],
+  ["♪", "#"]
+].map(([label, href]) => (
+  <a
+    key={label}
+    href={href}
+    className="grid h-9 min-w-9 place-items-center rounded-md border border-brand-200 bg-white/70 px-2 text-sm font-bold text-brand-700 transition hover:bg-brand-700 hover:text-white"
+  >
+    {label}
+  </a>
+))}
             </div>
           </div>
         </div>
