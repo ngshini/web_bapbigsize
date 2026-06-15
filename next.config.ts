@@ -8,6 +8,12 @@ const nextConfig: NextConfig = {
         hostname: "**.supabase.co"
       }
     ]
+  },
+  experimental: {
+    // Đặt Vercel function gần Supabase DB (ap-southeast-2 = Sydney)
+    serverActions: {
+      bodySizeLimit: "2mb"
+    }
   }
 };
 

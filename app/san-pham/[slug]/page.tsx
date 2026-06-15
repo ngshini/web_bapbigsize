@@ -10,7 +10,7 @@ import { formatCurrency } from "@/lib/formatCurrency";
 import { getProductBySlug, getRelatedProducts, getSizeGuideImage, getSizeGuides, getStoreSettings } from "@/lib/data";
 import Link from "next/link";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

@@ -8,7 +8,7 @@ import { SizeGuide } from "@/components/public/SizeGuide";
 import { getProducts, getSizeGuideImage, getSizeGuides, getStoreSettings } from "@/lib/data";
 import { formatCurrency } from "@/lib/formatCurrency";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export default async function HomePage() {
   const [store, products, guides, sizeImage] = await Promise.all([getStoreSettings(), getProducts(), getSizeGuides(), getSizeGuideImage()]);
