@@ -59,7 +59,7 @@ export function ProductCard({ product }: ProductCardProps) {
         </p>
         <div className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-md bg-brand-900 px-3 py-3 text-sm font-bold text-white transition group-hover:bg-brand-700">
           <ShoppingBag size={17} />
-          Xem sản phẩm
+          Mua ngay
         </div>
       </div>
     </Link>
