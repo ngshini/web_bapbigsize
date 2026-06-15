@@ -15,7 +15,7 @@ type HeaderProps = {
 
 export function Header({ store }: HeaderProps) {
   return (
-    <header className="sticky top-0 z-40 border-b border-brand-100 bg-white/95 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-brand-100 bg-white">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-3 py-3 sm:px-4 md:flex-nowrap">
         <Link href="/" className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
           {store.logoUrl ? (

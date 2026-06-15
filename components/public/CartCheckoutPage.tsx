@@ -6,45 +6,9 @@ import Link from "next/link";
 import { CreditCard, Minus, Plus, ShoppingCart, Trash2, Truck } from "lucide-react";
 import { calculatePromotionPrice } from "@/lib/pricing";
 import { formatCurrency } from "@/lib/formatCurrency";
+import { AddressSelect } from "@/components/public/AddressSelect";
 
 const CART_KEY = "bap-bigsize-cart";
-
-const VIETNAM_PROVINCES = [
-  "Thành phố Hà Nội",
-  "Thành phố Huế",
-  "Thành phố Hải Phòng",
-  "Thành phố Đà Nẵng",
-  "Thành phố Hồ Chí Minh",
-  "Thành phố Cần Thơ",
-  "Tỉnh Lai Châu",
-  "Tỉnh Điện Biên",
-  "Tỉnh Sơn La",
-  "Tỉnh Lạng Sơn",
-  "Tỉnh Quảng Ninh",
-  "Tỉnh Thanh Hóa",
-  "Tỉnh Nghệ An",
-  "Tỉnh Hà Tĩnh",
-  "Tỉnh Cao Bằng",
-  "Tỉnh Tuyên Quang",
-  "Tỉnh Lào Cai",
-  "Tỉnh Thái Nguyên",
-  "Tỉnh Phú Thọ",
-  "Tỉnh Bắc Ninh",
-  "Tỉnh Hưng Yên",
-  "Tỉnh Ninh Bình",
-  "Tỉnh Quảng Trị",
-  "Tỉnh Quảng Ngãi",
-  "Tỉnh Gia Lai",
-  "Tỉnh Khánh Hòa",
-  "Tỉnh Lâm Đồng",
-  "Tỉnh Đắk Lắk",
-  "Tỉnh Đồng Nai",
-  "Tỉnh Tây Ninh",
-  "Tỉnh Vĩnh Long",
-  "Tỉnh Đồng Tháp",
-  "Tỉnh Cà Mau",
-  "Tỉnh An Giang"
-];
 
 type CartItem = {
   productId: string;
@@ -134,24 +98,10 @@ export function CartCheckoutPage({ phone }: { phone: string }) {
           <input required className="min-h-14 rounded-md border-slate-300 text-lg" placeholder="Họ và tên" value={form.customerName} onChange={(event) => setForm({ ...form, customerName: event.target.value })} />
           <input required className="min-h-14 rounded-md border-slate-300 text-lg" placeholder="Số điện thoại" value={form.customerPhone} onChange={(event) => setForm({ ...form, customerPhone: event.target.value })} />
           <input required className="min-h-14 rounded-md border-slate-300 text-lg" placeholder="Địa chỉ" value={form.customerAddress} onChange={(event) => setForm({ ...form, customerAddress: event.target.value })} />
-          <div className="grid gap-4 md:grid-cols-3">
-            <select className="min-h-14 rounded-md border-slate-300 text-lg" value={form.province} onChange={(event) => setForm({ ...form, province: event.target.value, district: "", ward: "" })}>
-              <option value="">Chọn tỉnh/thành phố</option>
-              {VIETNAM_PROVINCES.map((province) => (
-                <option key={province}>{province}</option>
-              ))}
-            </select>
-            <select className="min-h-14 rounded-md border-slate-300 text-lg" value={form.district} onChange={(event) => setForm({ ...form, district: event.target.value })}>
-              <option value="">Chọn Quận/huyện</option>
-              {form.province === "Thành phố Hồ Chí Minh" ? <option>Bình Tân</option> : null}
-              <option>Khu vực khác</option>
-            </select>
-            <select className="min-h-14 rounded-md border-slate-300 text-lg" value={form.ward} onChange={(event) => setForm({ ...form, ward: event.target.value })}>
-              <option value="">Chọn Phường/xã</option>
-              {form.province === "Thành phố Hồ Chí Minh" ? <option>Bình Hưng Hòa B</option> : null}
-              <option>Phường/xã khác</option>
-            </select>
-          </div>
+          <AddressSelect
+            value={{ province: form.province, district: form.district, ward: form.ward }}
+            onChange={(addr) => setForm({ ...form, ...addr })}
+          />
           <input className="min-h-14 rounded-md border-slate-300 text-lg" placeholder="Ví dụ: giao hàng giờ hành chính" value={form.note} onChange={(event) => setForm({ ...form, note: event.target.value })} />
         </div>
 

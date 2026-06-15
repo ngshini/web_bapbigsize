@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getFallbackLogoUrl, getFallbackSizeGuideUrl, listPictureFiles } from "@/lib/media";
 import { calculatePromotionPrice } from "@/lib/pricing";
+import { unstable_cache } from "next/cache";
 
 export const defaultStore = {
   storeName: "Tổng kho đồ bộ miền Nam",
@@ -69,95 +70,130 @@ export function fallbackProduct() {
   };
 }
 
-export async function getStoreSettings() {
-  try {
-    const settings = await prisma.storeSetting.findFirst();
+// ===== CACHED DATA FUNCTIONS (cache 60s) =====
 
-    return {
-      ...defaultStore,
-      ...settings,
+export const getStoreSettings = unstable_cache(
+  async () => {
+    try {
+      const settings = await prisma.storeSetting.findFirst();
+      return {
+        ...defaultStore,
+        ...settings,
+        zaloUrl: "https://zalo.me/g/6aqdtxyciyxyit6frne9",
+        logoUrl: settings?.logoUrl ?? getFallbackLogoUrl()
+      };
+    } catch {
+      return {
+        ...defaultStore,
+        zaloUrl: "https://zalo.me/g/6aqdtxyciyxyit6frne9",
+        logoUrl: getFallbackLogoUrl()
+      };
+    }
+  },
+  ["store-settings"],
+  { revalidate: 120, tags: ["store"] }
+);
 
-      // Ép cứng link nhóm Zalo
-      zaloUrl: "https://zalo.me/g/6aqdtxyciyxyit6frne9",
+export const getSizeGuides = unstable_cache(
+  async () => {
+    try {
+      const guides = await prisma.sizeGuide.findMany({ orderBy: { sortOrder: "asc" } });
+      if (guides.length) return guides;
+    } catch {}
+    return [
+      { id: "M", size: "M", weightRange: "45-55kg", bustRange: "75-80cm", waistRange: "dưới 72cm", hipRange: "85-93cm", sortOrder: 1 },
+      { id: "L", size: "L", weightRange: "55-65kg", bustRange: "85-94cm", waistRange: "dưới 82cm", hipRange: "94-102cm", sortOrder: 2 },
+      { id: "XL", size: "XL", weightRange: "65-75kg", bustRange: "95-104cm", waistRange: "dưới 92cm", hipRange: "103-110cm", sortOrder: 3 },
+      { id: "2XL", size: "2XL", weightRange: "75-85kg", bustRange: "105-115cm", waistRange: "dưới 102cm", hipRange: "111-120cm", sortOrder: 4 }
+    ];
+  },
+  ["size-guides"],
+  { revalidate: 300, tags: ["size-guides"] }
+);
 
-      logoUrl: settings?.logoUrl ?? getFallbackLogoUrl()
-    };
-  } catch {
-    return {
-      ...defaultStore,
-      zaloUrl: "https://zalo.me/g/6aqdtxyciyxyit6frne9",
-      logoUrl: getFallbackLogoUrl()
-    };
-  }
-}
-
-export async function getSizeGuides() {
-  try {
-    const guides = await prisma.sizeGuide.findMany({ orderBy: { sortOrder: "asc" } });
-    if (guides.length) return guides;
-  } catch {}
-
-  return [
-    { id: "M", size: "M", weightRange: "45-55kg", bustRange: "75-80cm", waistRange: "dưới 72cm", hipRange: "85-93cm", sortOrder: 1 },
-    { id: "L", size: "L", weightRange: "55-65kg", bustRange: "85-94cm", waistRange: "dưới 82cm", hipRange: "94-102cm", sortOrder: 2 },
-    { id: "XL", size: "XL", weightRange: "65-75kg", bustRange: "95-104cm", waistRange: "dưới 92cm", hipRange: "103-110cm", sortOrder: 3 },
-    { id: "2XL", size: "2XL", weightRange: "75-85kg", bustRange: "105-115cm", waistRange: "dưới 102cm", hipRange: "111-120cm", sortOrder: 4 }
-  ];
-}
-
-export async function getProducts() {
-  try {
-    const products = await prisma.product.findMany({
-      where: { status: "ACTIVE" },
-      include: { media: { orderBy: { sortOrder: "asc" } }, variants: true, promotions: true, category: true },
-      orderBy: [{ isHot: "desc" }, { createdAt: "desc" }]
-    });
-    return products.length ? products : [fallbackProduct()];
-  } catch {
-    return [fallbackProduct()];
-  }
-}
+export const getProducts = unstable_cache(
+  async () => {
+    try {
+      const products = await prisma.product.findMany({
+        where: { status: "ACTIVE" },
+        include: { media: { orderBy: { sortOrder: "asc" } }, variants: true, promotions: true, category: true },
+        orderBy: [{ isHot: "desc" }, { createdAt: "desc" }]
+      });
+      return products.length ? products : [fallbackProduct()];
+    } catch {
+      return [fallbackProduct()];
+    }
+  },
+  ["products-list"],
+  { revalidate: 60, tags: ["products"] }
+);
 
 export async function getProductBySlug(slug: string) {
-  try {
-    const product = await prisma.product.findUnique({
-      where: { slug },
-      include: { media: { orderBy: { sortOrder: "asc" } }, variants: true, promotions: true, category: true, reviews: true }
-    });
-    return product ?? (slug === fallbackProduct().slug ? fallbackProduct() : null);
-  } catch {
-    const product = fallbackProduct();
-    return slug === product.slug ? product : null;
-  }
+  return unstable_cache(
+    async () => {
+      try {
+        const product = await prisma.product.findUnique({
+          where: { slug },
+          include: { media: { orderBy: { sortOrder: "asc" } }, variants: true, promotions: true, category: true, reviews: true }
+        });
+        return product ?? (slug === fallbackProduct().slug ? fallbackProduct() : null);
+      } catch {
+        const product = fallbackProduct();
+        return slug === product.slug ? product : null;
+      }
+    },
+    [`product-${slug}`],
+    { revalidate: 60, tags: ["products", `product-${slug}`] }
+  )();
 }
+
+export const getAllProductSlugs = unstable_cache(
+  async () => {
+    try {
+      const products = await prisma.product.findMany({
+        where: { status: "ACTIVE" },
+        select: { slug: true }
+      });
+      return products.length ? products.map((p) => p.slug) : [fallbackProduct().slug];
+    } catch {
+      return [fallbackProduct().slug];
+    }
+  },
+  ["product-slugs"],
+  { revalidate: 300, tags: ["products"] }
+);
 
 export async function getSizeGuideImage() {
   return getFallbackSizeGuideUrl();
 }
 
 export async function getRelatedProducts(currentSlug: string, categoryId?: string | null, limit = 4) {
-  try {
-    const products = await prisma.product.findMany({
-      where: {
-        status: "ACTIVE",
-        slug: { not: currentSlug },
-        ...(categoryId ? { categoryId } : {})
-      },
-      include: { media: { orderBy: { sortOrder: "asc" } }, variants: true },
-      orderBy: [{ isHot: "desc" }, { createdAt: "desc" }],
-      take: limit
-    });
-    if (products.length) return products;
-    // If no products in same category, get any other products
-    const fallbackProducts = await prisma.product.findMany({
-      where: { status: "ACTIVE", slug: { not: currentSlug } },
-      include: { media: { orderBy: { sortOrder: "asc" } }, variants: true },
-      orderBy: [{ isHot: "desc" }, { createdAt: "desc" }],
-      take: limit
-    });
-    return fallbackProducts;
-  } catch {
-    return [];
-  }
+  return unstable_cache(
+    async () => {
+      try {
+        const products = await prisma.product.findMany({
+          where: {
+            status: "ACTIVE",
+            slug: { not: currentSlug },
+            ...(categoryId ? { categoryId } : {})
+          },
+          include: { media: { orderBy: { sortOrder: "asc" } }, variants: true },
+          orderBy: [{ isHot: "desc" }, { createdAt: "desc" }],
+          take: limit
+        });
+        if (products.length) return products;
+        const fallbackProducts = await prisma.product.findMany({
+          where: { status: "ACTIVE", slug: { not: currentSlug } },
+          include: { media: { orderBy: { sortOrder: "asc" } }, variants: true },
+          orderBy: [{ isHot: "desc" }, { createdAt: "desc" }],
+          take: limit
+        });
+        return fallbackProducts;
+      } catch {
+        return [];
+      }
+    },
+    [`related-${currentSlug}`],
+    { revalidate: 120, tags: ["products"] }
+  )();
 }
-

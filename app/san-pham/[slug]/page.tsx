@@ -7,10 +7,16 @@ import { ProductDetailClient } from "@/components/public/ProductDetailClient";
 import { ProductReviews } from "@/components/public/ProductReviews";
 import { SizeGuide } from "@/components/public/SizeGuide";
 import { formatCurrency } from "@/lib/formatCurrency";
-import { getProductBySlug, getRelatedProducts, getSizeGuideImage, getSizeGuides, getStoreSettings } from "@/lib/data";
+import { getAllProductSlugs, getProductBySlug, getRelatedProducts, getSizeGuideImage, getSizeGuides, getStoreSettings } from "@/lib/data";
 import Link from "next/link";
 
 export const revalidate = 60;
+export const preferredRegion = "syd1";
+
+export async function generateStaticParams() {
+  const slugs = await getAllProductSlugs();
+  return slugs.map((slug) => ({ slug }));
+}
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -89,7 +95,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
         <ProductReviews
           productId={product.id}
-          initialReviews={(product.reviews ?? []).map((r) => ({ ...r, createdAt: r.createdAt.toISOString() }))}
+          initialReviews={(product.reviews ?? []).map((r) => ({ ...r, createdAt: new Date(r.createdAt).toISOString() }))}
           avgRating={product.reviews?.length ? product.reviews.reduce((s, r) => s + r.rating, 0) / product.reviews.length : 0}
         />
 
@@ -111,7 +117,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           </section>
         )}
       </main>
-      <div className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-2 gap-2 border-t border-brand-100 bg-white/95 p-3 shadow-[0_-8px_24px_rgba(190,24,93,0.12)] backdrop-blur sm:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-2 gap-2 border-t border-brand-100 bg-white p-3 shadow-[0_-8px_24px_rgba(190,24,93,0.12)] sm:hidden">
         <a href={`tel:${store.phone}`} className="rounded-md border border-brand-200 px-4 py-3 text-center font-bold text-brand-700">
           Gọi ngay
         </a>

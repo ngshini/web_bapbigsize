@@ -9,6 +9,7 @@ import { getProducts, getSizeGuideImage, getSizeGuides, getStoreSettings } from 
 import { formatCurrency } from "@/lib/formatCurrency";
 
 export const revalidate = 60;
+export const preferredRegion = "syd1";
 
 export default async function HomePage() {
   const [store, products, guides, sizeImage] = await Promise.all([getStoreSettings(), getProducts(), getSizeGuides(), getSizeGuideImage()]);

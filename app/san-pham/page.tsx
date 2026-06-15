@@ -5,6 +5,7 @@ import { ProductCard } from "@/components/public/ProductCard";
 import { getProducts, getStoreSettings } from "@/lib/data";
 
 export const revalidate = 60;
+export const preferredRegion = "syd1";
 
 export default async function ProductsPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const params = await searchParams;
