@@ -28,40 +28,42 @@ type Order = {
 
 const statuses = ["PENDING", "CONFIRMED", "SHIPPING", "COMPLETED", "CANCELLED"];
 
-// Bọc 1 giá trị thành ô CSV an toàn (escape dấu ", phẩy, xuống dòng)
-function csvCell(value: string | number | null | undefined) {
+// Escape nội dung để nhúng an toàn vào HTML (tránh vỡ bảng)
+function htmlCell(value: string | number | null | undefined) {
   const text = value == null ? "" : String(value);
-  return `"${text.replace(/"/g, '""')}"`;
+  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 export function OrderTable({ orders }: { orders: Order[] }) {
   const [items, setItems] = useState(orders);
 
-  function exportCsv() {
-    const headers = ["Mã đơn", "Sản phẩm", "Tên khách hàng", "Số điện thoại", "Email", "Địa chỉ", "Tổng tiền", "Trạng thái", "Ngày tạo"];
-    const rows = items.map((order) => {
-      const products = order.items
-        .map((item) => `${item.product?.productCode ?? "Không rõ mã"} - ${item.productName} (${item.size}, ${item.color}, SL: ${item.quantity})`)
-        .join(" | ");
-      return [
-        order.orderCode,
-        products,
-        order.customerName,
-        order.customerPhone,
-        order.customerEmail ?? "",
-        order.customerAddress,
-        order.totalAmount,
-        order.status,
-        new Date(order.createdAt).toLocaleString("vi-VN")
-      ].map(csvCell).join(",");
-    });
-    // ﻿ (BOM) để Excel đọc đúng tiếng Việt UTF-8
-    const csv = "﻿" + [headers.map(csvCell).join(","), ...rows].join("\r\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  // Xuất file Excel (.xls dạng bảng HTML) — luôn ra cột riêng, không phụ thuộc cấu hình CSV
+  function exportExcel() {
+    const headers = ["Mã đơn", "Sản phẩm", "Tên khách hàng", "Số điện thoại", "Email", "Địa chỉ", "Tổng tiền"];
+    const headerRow = `<tr>${headers.map((h) => `<th style="background:#1f2937;color:#fff;border:1px solid #999;padding:6px;text-align:left">${htmlCell(h)}</th>`).join("")}</tr>`;
+    const bodyRows = items
+      .map((order) => {
+        const products = order.items
+          .map((item) => `${item.product?.productCode ?? "Không rõ mã"} - ${item.productName} (${item.size}, ${item.color}, SL: ${item.quantity})`)
+          .join(" | ");
+        const cells = [
+          order.orderCode,
+          products,
+          order.customerName,
+          order.customerPhone,
+          order.customerEmail ?? "",
+          order.customerAddress,
+          order.totalAmount.toLocaleString("vi-VN") + " đ"
+        ];
+        return `<tr>${cells.map((c) => `<td style="border:1px solid #ccc;padding:6px;mso-number-format:'\\@'">${htmlCell(c)}</td>`).join("")}</tr>`;
+      })
+      .join("");
+    const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"></head><body><table border="1">${headerRow}${bodyRows}</table></body></html>`;
+    const blob = new Blob(["﻿" + html], { type: "application/vnd.ms-excel;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `don-hang-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.download = `don-hang-${new Date().toISOString().slice(0, 10)}.xls`;
     link.click();
     URL.revokeObjectURL(url);
   }
@@ -83,12 +85,12 @@ export function OrderTable({ orders }: { orders: Order[] }) {
       <p className="text-sm text-slate-500">{items.length} đơn hàng</p>
       <button
         type="button"
-        onClick={exportCsv}
+        onClick={exportExcel}
         disabled={items.length === 0}
         className="inline-flex items-center gap-2 rounded-md bg-emerald-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-emerald-700 disabled:opacity-50"
       >
         <Download size={16} />
-        Xuất CSV
+        Xuất Excel
       </button>
     </div>
     <div className="-mx-3 overflow-x-auto rounded-md border bg-white sm:mx-0">
