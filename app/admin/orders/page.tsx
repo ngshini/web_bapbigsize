@@ -28,6 +28,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
       },
       orderBy: { createdAt: "desc" },
       include: {
+        customer: { select: { email: true } },
         items: {
           include: {
             product: {
@@ -40,6 +41,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
       }
     })
     .catch(() => []);
+  const ordersWithEmail = orders.map((order) => ({ ...order, customerEmail: order.customer?.email ?? null }));
   return (
     <AdminLayout>
       <h1 className="text-2xl font-bold">Đơn hàng</h1>
@@ -56,7 +58,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
         <button className="rounded-md bg-slate-900 px-4 py-3 font-bold text-white sm:py-2">Lọc</button>
       </form>
       <div className="mt-5">
-        <OrderTable orders={orders} />
+        <OrderTable orders={ordersWithEmail} />
       </div>
     </AdminLayout>
   );
