@@ -26,7 +26,14 @@ type Order = {
   }>;
 };
 
-const statuses = ["PENDING", "CONFIRMED", "SHIPPING", "COMPLETED", "CANCELLED"];
+const STATUS_LABELS: Record<string, string> = {
+  PENDING: "Chờ xác nhận",
+  CONFIRMED: "Đã xác nhận",
+  SHIPPING: "Đang giao hàng",
+  COMPLETED: "Hoàn thành",
+  CANCELLED: "Đã huỷ",
+};
+const statuses = Object.keys(STATUS_LABELS);
 
 // Escape nội dung để nhúng an toàn vào HTML (tránh vỡ bảng)
 function htmlCell(value: string | number | null | undefined) {
@@ -131,7 +138,7 @@ export function OrderTable({ orders }: { orders: Order[] }) {
               <td className="p-3">
                 <select value={order.status} onChange={(event) => updateStatus(order.id, event.target.value)}>
                   {statuses.map((status) => (
-                    <option key={status}>{status}</option>
+                    <option key={status} value={status}>{STATUS_LABELS[status]}</option>
                   ))}
                 </select>
               </td>
