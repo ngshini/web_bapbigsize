@@ -115,7 +115,7 @@ export const getProducts = unstable_cache(
   async () => {
     try {
       const products = await prisma.product.findMany({
-        where: { status: "ACTIVE" },
+        where: { status: { in: ["ACTIVE", "OUT_OF_STOCK"] } },
         include: { media: { orderBy: { sortOrder: "asc" } }, variants: true, promotions: true, category: true },
         orderBy: [{ isHot: "desc" }, { createdAt: "desc" }]
       });

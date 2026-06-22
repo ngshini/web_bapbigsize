@@ -23,8 +23,12 @@ export function ProductCard({ product }: ProductCardProps) {
   const video = product.media?.find((item) => item.mediaType === "VIDEO");
   const discount = product.originalPrice > product.salePrice ? Math.round(((product.originalPrice - product.salePrice) / product.originalPrice) * 100) : 0;
 
+  const isOutOfStock = product.status === "OUT_OF_STOCK";
+  const Wrapper = isOutOfStock ? "div" : Link;
+  const wrapperProps = isOutOfStock ? {} : { href: `/san-pham/${product.slug}` };
+
   return (
-    <Link href={`/san-pham/${product.slug}`} className="group block overflow-hidden rounded-md bg-white shadow-sm ring-1 ring-brand-100 transition hover:-translate-y-1 hover:shadow-soft">
+    <Wrapper {...wrapperProps as any} className={`group block overflow-hidden rounded-md bg-white shadow-sm ring-1 ring-brand-100 transition ${isOutOfStock ? "opacity-80 cursor-default" : "hover:-translate-y-1 hover:shadow-soft"}`}>
       <div className="relative aspect-[3/4] overflow-hidden bg-brand-50">
         {image ? (
           <>
@@ -46,6 +50,11 @@ export function ProductCard({ product }: ProductCardProps) {
           <Heart size={18} />
         </span>
         {product.productCode ? <span className="absolute bottom-3 left-3 rounded-md bg-white/95 px-3 py-1.5 text-xs font-bold text-brand-900 shadow-sm">Mã {product.productCode}</span> : null}
+        {isOutOfStock && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/40">
+            <span className="rounded-md bg-red-600 px-5 py-2.5 text-lg font-bold uppercase tracking-wider text-white shadow-lg">Hết hàng</span>
+          </div>
+        )}
       </div>
       <div className="p-4">
         <p className="line-clamp-2 min-h-12 font-bold leading-6 text-brand-900">{product.name}</p>
@@ -57,11 +66,11 @@ export function ProductCard({ product }: ProductCardProps) {
         <p className={product.status === "ACTIVE" ? "mt-3 text-sm font-bold text-green-700" : "mt-3 text-sm font-bold text-red-600"}>
           {product.status === "ACTIVE" ? "Còn hàng" : "Hết hàng"}
         </p>
-        <div className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-md bg-brand-900 px-3 py-3 text-sm font-bold text-white transition group-hover:bg-brand-700">
+        <div className={`mt-4 inline-flex w-full items-center justify-center gap-2 rounded-md px-3 py-3 text-sm font-bold transition ${isOutOfStock ? "bg-slate-300 text-slate-500 cursor-not-allowed" : "bg-brand-900 text-white group-hover:bg-brand-700"}`}>
           <ShoppingBag size={17} />
-          Mua ngay
+          {isOutOfStock ? "Hết hàng" : "Mua ngay"}
         </div>
       </div>
-    </Link>
+    </Wrapper>
   );
 }

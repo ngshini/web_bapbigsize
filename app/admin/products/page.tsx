@@ -1,6 +1,7 @@
 import { ProductStatus } from "@prisma/client";
 import Link from "next/link";
 import { AdminLayout } from "@/components/admin/AdminLayout";
+import { ProductStatusControl } from "@/components/admin/ProductStatusControl";
 import { formatCurrency } from "@/lib/formatCurrency";
 import { prisma } from "@/lib/prisma";
 
@@ -33,9 +34,9 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
         <input name="q" placeholder="Tìm tên hoặc mã sản phẩm" defaultValue={q ?? ""} />
         <select name="status" defaultValue={status ?? ""}>
           <option value="">Tất cả trạng thái</option>
-          <option value="ACTIVE">ACTIVE</option>
-          <option value="INACTIVE">INACTIVE</option>
-          <option value="OUT_OF_STOCK">OUT_OF_STOCK</option>
+          <option value="ACTIVE">Đang bán</option>
+          <option value="INACTIVE">Đã ẩn</option>
+          <option value="OUT_OF_STOCK">Hết hàng</option>
         </select>
         <button className="rounded-md bg-slate-900 px-4 py-3 font-bold text-white sm:py-2">Lọc</button>
       </form>
@@ -56,7 +57,9 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
                 <td className="p-3">{product.productCode}</td>
                 <td className="p-3 font-semibold">{product.name}</td>
                 <td className="p-3">{formatCurrency(product.salePrice)}</td>
-                <td className="p-3">{product.status}</td>
+                <td className="p-3">
+                  <ProductStatusControl productId={product.id} initialStatus={product.status} />
+                </td>
                 <td className="flex gap-2 p-3">
                   <Link className="rounded-md border px-2 py-1" href={`/san-pham/${product.slug}`}>
                     Xem
