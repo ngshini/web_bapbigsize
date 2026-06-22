@@ -24,11 +24,9 @@ export function ProductCard({ product }: ProductCardProps) {
   const discount = product.originalPrice > product.salePrice ? Math.round(((product.originalPrice - product.salePrice) / product.originalPrice) * 100) : 0;
 
   const isOutOfStock = product.status === "OUT_OF_STOCK";
-  const Wrapper = isOutOfStock ? "div" : Link;
-  const wrapperProps = isOutOfStock ? {} : { href: `/san-pham/${product.slug}` };
 
-  return (
-    <Wrapper {...wrapperProps as any} className={`group block overflow-hidden rounded-md bg-white shadow-sm ring-1 ring-brand-100 transition ${isOutOfStock ? "opacity-80 cursor-default" : "hover:-translate-y-1 hover:shadow-soft"}`}>
+  const cardContent = (
+    <>
       <div className="relative aspect-[3/4] overflow-hidden bg-brand-50">
         {image ? (
           <>
@@ -71,6 +69,16 @@ export function ProductCard({ product }: ProductCardProps) {
           {isOutOfStock ? "Hết hàng" : "Mua ngay"}
         </div>
       </div>
-    </Wrapper>
+    </>
+  );
+
+  if (isOutOfStock) {
+    return <div className="group block overflow-hidden rounded-md bg-white opacity-80 shadow-sm ring-1 ring-brand-100">{cardContent}</div>;
+  }
+
+  return (
+    <Link href={`/san-pham/${product.slug}`} className="group block overflow-hidden rounded-md bg-white shadow-sm ring-1 ring-brand-100 transition hover:-translate-y-1 hover:shadow-soft">
+      {cardContent}
+    </Link>
   );
 }

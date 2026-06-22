@@ -43,7 +43,7 @@ type StoredCartItem = {
   quantity: number;
 };
 
-export function BuyNowCheckout({ product, variants, phone, colorImageMap = {}, selectedColor: controlledColor, onColorChange }: BuyNowCheckoutProps) {
+export function BuyNowCheckout({ product, variants, phone: _phone, colorImageMap = {}, selectedColor: controlledColor, onColorChange }: BuyNowCheckoutProps) {
   const activeVariants = variants.filter((variant) => variant.isActive);
   const colors = Array.from(new Set(activeVariants.map((variant) => variant.color)));
   const sizes = Array.from(new Set(activeVariants.map((variant) => variant.size)));
