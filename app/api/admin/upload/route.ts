@@ -3,6 +3,9 @@ import { getAdminFromRequest } from "@/lib/auth";
 import { ensureProductMediaBucket, PRODUCT_MEDIA_BUCKET } from "@/lib/supabaseAdmin";
 import { getMediaType, isSupportedMedia } from "@/lib/media";
 
+export const dynamic = "force-dynamic";
+export const maxDuration = 60;
+
 export async function POST(request: NextRequest) {
   if (!getAdminFromRequest(request)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const form = await request.formData();

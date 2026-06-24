@@ -1,20 +1,21 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  experimental: {
+    // Đặt Vercel function gần Supabase DB (ap-southeast-2 = Sydney)
+    serverActions: {
+      bodySizeLimit: "100mb",
+    },
+  },
   images: {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "**.supabase.co"
-      }
-    ]
+        hostname: "clgbiuncejwacwuxikgj.supabase.co",
+        pathname: "/storage/v1/object/public/**",
+      },
+    ],
   },
-  experimental: {
-    // Đặt Vercel function gần Supabase DB (ap-southeast-2 = Sydney)
-    serverActions: {
-      bodySizeLimit: "2mb"
-    }
-  }
 };
 
 export default nextConfig;
