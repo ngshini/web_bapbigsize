@@ -39,10 +39,44 @@ export function MediaUploader<T extends {
     setUploading(true);
     const uploaded: Media[] = [];
     for (const file of files) {
-      const form = new FormData();
-      form.append("file", file);
-      const response = await fetch("/api/admin/upload", { method: "POST", body: form });
-      if (response.ok) uploaded.push(await response.json());
+      const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
+      const isVideo = ["mp4", "mov", "webm"].includes(ext);
+
+      if (isVideo) {
+        // Video: lấy signed URL từ server rồi upload trực tiếp lên Supabase (bypass giới hạn 4.5MB của Vercel)
+        try {
+          const urlRes = await fetch("/api/admin/upload-url", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ fileName: file.name }),
+          });
+          if (!urlRes.ok) { console.error("Get signed URL error:", await urlRes.text()); continue; }
+          const { signedUrl, path, publicUrl, mediaType } = await urlRes.json();
+
+          const uploadRes = await fetch(signedUrl, {
+            method: "PUT",
+            headers: { "Content-Type": file.type },
+            body: file,
+          });
+          if (!uploadRes.ok) { console.error("Upload video error:", uploadRes.status); continue; }
+
+          uploaded.push({
+            mediaUrl: publicUrl,
+            mediaType: mediaType,
+            altText: file.name,
+            isMain: false,
+            sortOrder: 0,
+            storagePath: path,
+            originalFileName: file.name,
+          });
+        } catch (err) { console.error("Upload video error:", err); }
+      } else {
+        // Ảnh: upload qua API (nhẹ, thường dưới 4.5MB)
+        const form = new FormData();
+        form.append("file", file);
+        const response = await fetch("/api/admin/upload", { method: "POST", body: form });
+        if (response.ok) uploaded.push(await response.json());
+      }
     }
     if (uploaded.length) {
       // Dùng functional update để tránh stale closure
