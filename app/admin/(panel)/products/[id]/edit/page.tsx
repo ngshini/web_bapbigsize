@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { AdminLayout } from "@/components/admin/AdminLayout";
 import { ProductForm } from "@/components/admin/ProductForm";
 import { prisma } from "@/lib/prisma";
 
@@ -13,9 +12,9 @@ export default async function AdminEditProductPage({ params }: { params: Promise
   ]);
   if (!product) notFound();
   return (
-    <AdminLayout>
+    <>
       <h1 className="mb-5 text-2xl font-bold">Sửa sản phẩm</h1>
       <ProductForm categories={categories} product={product} mode="edit" />
-    </AdminLayout>
+    </>
   );
 }

@@ -1,5 +1,4 @@
 import { OrderStatus } from "@prisma/client";
-import { AdminLayout } from "@/components/admin/AdminLayout";
 import { OrderTable } from "@/components/admin/OrderTable";
 import { prisma } from "@/lib/prisma";
 
@@ -43,7 +42,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
     .catch(() => []);
   const ordersWithEmail = orders.map((order) => ({ ...order, customerEmail: order.customer?.email ?? null }));
   return (
-    <AdminLayout>
+    <>
       <h1 className="text-2xl font-bold">Đơn hàng</h1>
       <form className="mt-5 grid gap-3 rounded-md bg-white p-3 sm:grid-cols-3 sm:p-4">
         <input name="q" placeholder="Tìm mã đơn, mã hàng, tên, số điện thoại, địa chỉ" defaultValue={q ?? ""} />
@@ -60,6 +59,6 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
       <div className="mt-5">
         <OrderTable orders={ordersWithEmail} />
       </div>
-    </AdminLayout>
+    </>
   );
 }

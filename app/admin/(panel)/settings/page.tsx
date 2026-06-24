@@ -1,4 +1,3 @@
-import { AdminLayout } from "@/components/admin/AdminLayout";
 import { prisma } from "@/lib/prisma";
 import { defaultStore, getStoreSettings } from "@/lib/data";
 
@@ -8,7 +7,7 @@ export default async function AdminSettingsPage() {
   const store = await getStoreSettings();
   const existing = await prisma.storeSetting.findFirst().catch(() => null);
   return (
-    <AdminLayout>
+    <>
       <h1 className="mb-5 text-2xl font-bold">Cài đặt shop</h1>
       <form action="/api/admin/settings" method="post" className="grid max-w-2xl gap-3 rounded-md bg-white p-5 shadow-sm">
         <input type="hidden" name="_method" value="PUT" />
@@ -47,6 +46,6 @@ export default async function AdminSettingsPage() {
         </label>
         <button className="rounded-md bg-brand-700 px-4 py-3 font-bold text-white">Lưu cài đặt</button>
       </form>
-    </AdminLayout>
+    </>
   );
 }

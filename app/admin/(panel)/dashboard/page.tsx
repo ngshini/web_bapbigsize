@@ -1,4 +1,3 @@
-import { AdminLayout } from "@/components/admin/AdminLayout";
 import { OrderTable } from "@/components/admin/OrderTable";
 import { RevenueChart } from "@/components/admin/RevenueChart";
 import { formatCurrency } from "@/lib/formatCurrency";
@@ -112,7 +111,7 @@ export default async function AdminDashboardPage() {
   ];
 
   return (
-    <AdminLayout>
+    <>
       <h1 className="text-2xl font-bold">Dashboard</h1>
 
       {/* Stats cards */}
@@ -209,7 +208,7 @@ export default async function AdminDashboardPage() {
         <h2 className="mb-3 font-bold">Đơn mới nhất</h2>
         <OrderTable orders={orders} />
       </div>
-    </AdminLayout>
+    </>
   );
 }
 

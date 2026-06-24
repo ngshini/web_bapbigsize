@@ -1,6 +1,5 @@
 import { ProductStatus } from "@prisma/client";
 import Link from "next/link";
-import { AdminLayout } from "@/components/admin/AdminLayout";
 import { ProductStatusControl } from "@/components/admin/ProductStatusControl";
 import { formatCurrency } from "@/lib/formatCurrency";
 import { prisma } from "@/lib/prisma";
@@ -23,7 +22,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
     .catch(() => []);
 
   return (
-    <AdminLayout>
+    <>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold">Sản phẩm</h1>
         <Link href="/admin/products/create" className="rounded-md bg-brand-700 px-4 py-2 font-bold text-white">
@@ -73,6 +72,6 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
           </tbody>
         </table>
       </div>
-    </AdminLayout>
+    </>
   );
 }

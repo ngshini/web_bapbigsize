@@ -2,6 +2,9 @@
 
 import { ChangeEvent, Dispatch, SetStateAction, useState } from "react";
 import Image from "next/image";
+import { createSupabaseBrowserClient, PRODUCT_MEDIA_BUCKET } from "@/lib/supabaseBrowser";
+
+const MAX_FILE_SIZE = 1024 * 1024 * 50; // 50MB
 
 type Media = {
   mediaUrl: string;
@@ -32,18 +35,58 @@ export function MediaUploader<T extends {
 }) {
   const [uploading, setUploading] = useState(false);
   const [hasPendingChanges, setHasPendingChanges] = useState(false);
+  const [error, setError] = useState("");
 
   async function upload(event: ChangeEvent<HTMLInputElement>) {
     const files = Array.from(event.target.files ?? []);
     if (!files.length) return;
     setUploading(true);
+    setError("");
     const uploaded: Media[] = [];
+    const errors: string[] = [];
+    const supabase = createSupabaseBrowserClient();
+
     for (const file of files) {
-      const form = new FormData();
-      form.append("file", file);
-      const response = await fetch("/api/admin/upload", { method: "POST", body: form });
-      if (response.ok) uploaded.push(await response.json());
+      if (file.size > MAX_FILE_SIZE) {
+        errors.push(`${file.name}: vượt quá 50MB (${(file.size / 1024 / 1024).toFixed(1)}MB)`);
+        continue;
+      }
+      try {
+        // 1) Xin signed upload URL từ server (request nhỏ)
+        const res = await fetch("/api/admin/upload-url", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ fileName: file.name })
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          errors.push(`${file.name}: ${data.error ?? "không lấy được link upload"}`);
+          continue;
+        }
+        const info = await res.json();
+        // 2) Upload file thẳng lên Supabase qua signed URL (không qua Vercel)
+        const { error: uploadError } = await supabase.storage
+          .from(PRODUCT_MEDIA_BUCKET)
+          .uploadToSignedUrl(info.path, info.token, file, { contentType: file.type });
+        if (uploadError) {
+          errors.push(`${file.name}: ${uploadError.message}`);
+          continue;
+        }
+        uploaded.push({
+          mediaUrl: info.publicUrl,
+          mediaType: info.mediaType,
+          altText: file.name,
+          isMain: false,
+          sortOrder: 0,
+          storagePath: info.path,
+          originalFileName: file.name
+        });
+      } catch (err) {
+        errors.push(`${file.name}: ${err instanceof Error ? err.message : "lỗi không xác định"}`);
+      }
     }
+
+    if (errors.length) setError(errors.join("; "));
     if (uploaded.length) {
       // Dùng functional update để tránh stale closure
       setMedia((prev) => [
@@ -64,8 +107,10 @@ export function MediaUploader<T extends {
   return (
     <div className="space-y-3">
       <h3 className="font-bold">Ảnh / video sản phẩm</h3>
-      <input className="w-full text-sm" type="file" multiple accept="image/*,video/*" onChange={upload} />
+      <input className="w-full text-sm" type="file" multiple accept="image/*,video/*" onChange={upload} disabled={uploading} />
+      <p className="text-xs text-slate-500">Hỗ trợ ảnh (jpg, png, webp) và video (mp4, mov, webm), tối đa 50MB mỗi file.</p>
       {uploading ? <p className="text-sm text-brand-700">Đang upload...</p> : null}
+      {error ? <p className="rounded-md bg-red-50 p-2 text-sm font-medium text-red-700">{error}</p> : null}
       {hasPendingChanges ? <p className="rounded-md bg-gold/30 p-2 text-sm font-semibold text-brand-900">Ảnh đã upload xong. Bấm “Lưu sản phẩm” ở cuối form để cập nhật lên website.</p> : null}
       <div className="grid gap-2">
         {media.map((item, index) => (
