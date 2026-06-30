@@ -45,8 +45,18 @@ type StoredCartItem = {
 
 export function BuyNowCheckout({ product, variants, phone: _phone, colorImageMap = {}, selectedColor: controlledColor, onColorChange }: BuyNowCheckoutProps) {
   const activeVariants = variants.filter((variant) => variant.isActive);
-  const colors = Array.from(new Set(activeVariants.map((variant) => variant.color)));
-  const sizes = Array.from(new Set(activeVariants.map((variant) => variant.size)));
+  // Gộp trùng theo giá trị đã chuẩn hoá (bỏ dấu cách thừa, không phân biệt hoa/thường)
+  // để tránh hiện 2 nút giống nhau (vd "M" và "M ").
+  const dedupe = (values: (string | null | undefined)[]) =>
+    Array.from(
+      new Map(
+        values
+          .filter((v): v is string => typeof v === "string" && v.trim() !== "")
+          .map((v) => [v.trim().toUpperCase(), v.trim()])
+      ).values()
+    );
+  const colors = dedupe(activeVariants.map((variant) => variant.color));
+  const sizes = dedupe(activeVariants.map((variant) => variant.size));
   const router = useRouter();
   const [form, setForm] = useState({
     size: sizes[0] ?? "",

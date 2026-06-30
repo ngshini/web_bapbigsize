@@ -1,7 +1,6 @@
 "use client";
 
 import { ChangeEvent, Dispatch, SetStateAction, useState } from "react";
-import Image from "next/image";
 import { createSupabaseBrowserClient, PRODUCT_MEDIA_BUCKET } from "@/lib/supabaseBrowser";
 
 const MAX_FILE_SIZE = 1024 * 1024 * 50; // 50MB
@@ -118,7 +117,9 @@ export function MediaUploader<T extends {
             <div className="flex min-w-0 items-center gap-3">
               <div className="relative grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-md bg-brand-50 text-xs font-bold text-brand-700">
                 {item.mediaType === "IMAGE" ? (
-                  <Image src={item.mediaUrl} alt={item.altText ?? item.originalFileName ?? "Ảnh sản phẩm"} fill sizes="64px" className="object-cover" />
+                  // Dùng <img> thường cho preview admin: hiện ngay, không phụ thuộc bộ tối ưu next/image
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={item.mediaUrl} alt={item.altText ?? item.originalFileName ?? "Ảnh sản phẩm"} className="absolute inset-0 h-full w-full object-cover" />
                 ) : (
                   <span>Video</span>
                 )}
